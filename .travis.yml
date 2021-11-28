@@ -1,0 +1,23 @@
+sudo: required
+services:
+  - docker
+
+
+before_install:
+  - docker build -t halapa/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true halapa/react-test npm
+
+after_success:
+  - docker build -t halapa/client ./client
+  - docker build -t halapa/nginx ./nginx
+  - docker build -t halapa/server ./server
+  - docker build -t halapa/worker ./worker
+  # Log in to the docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # upload images to docker hub
+  - docker push halapa/client
+  - docker push halapa/nginx
+  - docker push halapa/server
+  - docker push halapa/worker
